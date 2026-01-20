@@ -159,7 +159,6 @@ button {
   <div class="details">
     <span class="badge">Met: 22 Feb 2025</span>
     <span class="badge">Anniversary: 17 Jun 2025</span>
-    <span class="badge">Your Birthday: 25 Jul 2008</span>
   </div>
 
   <div class="btn-wrapper" id="btnArea">
@@ -283,9 +282,8 @@ yesBtn.addEventListener('click', () => {
   }
   
   const now = new Date();
-  const bday = Math.ceil((new Date("2026-07-25") - now) / 86400000);
   const anni = Math.ceil((new Date("2026-06-17") - now) / 86400000);
-  document.getElementById('countdowns').innerHTML = `🎂 Your Birthday in <b>${bday}</b> days<br>💞 Anniversary in <b>${anni}</b> days`;
+  document.getElementById('countdowns').innerHTML = `💞 Anniversary in <b>${anni}</b> days`;
   
   // Massive burst from top
   for(let i=0; i<150; i++) {
