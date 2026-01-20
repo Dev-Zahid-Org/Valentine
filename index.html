@@ -30,6 +30,7 @@ body {
   color: var(--text);
 }
 
+/* Twinkling Star Background */
 .stars-container {
   position: fixed;
   inset: 0;
@@ -50,6 +51,7 @@ body {
   50% { opacity: 0.7; transform: scale(1.2); }
 }
 
+/* Animations */
 @keyframes shakeBox {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-10px) rotate(-1deg); }
@@ -63,18 +65,19 @@ body {
   100% { box-shadow: 0 0 0 0 rgba(255, 77, 109, 0); transform: scale(var(--scale)); }
 }
 
+/* Particles Layered Behind */
 .heart { 
   position: absolute; 
   pointer-events: none; 
   z-index: 1; 
-  top: -50px; 
+  top: -50px; /* Start above screen */
   animation: rainDown var(--d) linear forwards; 
 }
 
 .confetti { 
   position: absolute; 
   z-index: 2; 
-  top: -20px; 
+  top: -20px; /* Start above screen */
   pointer-events: none;
   animation: rainDown var(--d) linear forwards; 
 }
@@ -101,12 +104,12 @@ h1 { color: #ffd6e0; font-size: clamp(1.6rem, 6vw, 2.1rem); margin: .6rem 0; }
 p { color: var(--sub); font-size: clamp(.95rem, 4vw, 1.05rem); font-weight: 500; }
 
 .btn-wrapper {
-  margin-top: 1.5rem;
+  margin-top: 2rem;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 20px;
-  min-height: 150px; /* Space for the growing button */
+  min-height: 130px;
 }
 
 button {
@@ -130,6 +133,17 @@ button {
 
 #noBtn { background: #5c5f87; color: white; z-index: 99; position: relative; }
 
+.badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255,77,109,.15);
+  color: #ffd6e0;
+  font-weight: 700;
+  font-size: .8rem;
+  margin: 6px 4px;
+}
+
 .hidden { display: none; }
 </style>
 </head>
@@ -138,9 +152,14 @@ button {
 <div class="stars-container" id="starsContainer"></div>
 
 <div class="container" id="mainCard">
-  <div id="imageBox" style="font-size: 80px; margin-bottom: .4rem;">🥺</div>
+  <div id="imageBox" style="font-size: clamp(64px, 18vw, 92px); margin-bottom: .4rem;">🥺</div>
   <h1 id="titleText">Lawoon khin, will you be my Valentine? 🌙💌</h1>
   <p id="subText">Baby… you’re my Divine miracle 🥹✨</p>
+
+  <div class="details">
+    <span class="badge">Met: 22 Feb 2025</span>
+    <span class="badge">Anniversary: 17 Jun 2025</span>
+  </div>
 
   <div class="btn-wrapper" id="btnArea">
     <button id="yesBtn">Yes baby 💖</button>
@@ -153,6 +172,7 @@ button {
   <h1>Baby you said YES 💘</h1>
   <p>I knew you'd say yes—my heart always knew you are only mine 🌙❤️</p>
   <div style="margin-top:18px;font-weight:900;color:#ff8fa3;">Lawoon ❤️ Zahid</div>
+  <div id="countdowns" style="margin-top:15px; font-size: 0.9rem; color: #d6d7ff;"></div>
   <div style="margin-top:22px; font-size:.95rem; color:#ffd6e0; font-weight:600;">
     Baby… you're my moon—my only light in a sky full of stars 🌙❤️
   </div>
@@ -168,6 +188,7 @@ const mainCard = document.getElementById('mainCard');
 const successCard = document.getElementById('successCard');
 const imgBox = document.getElementById('imageBox');
 
+// Background Twinkling Stars
 const starsContainer = document.getElementById('starsContainer');
 for (let i = 0; i < 100; i++) {
     const star = document.createElement('div');
@@ -188,6 +209,7 @@ const emojis = ["😟", "🥺", "😿", "😭", "💔", "😢", "😞", "😵", 
 
 function moveNo() {
   noClicks++;
+
   mainCard.classList.remove('apply-shake');
   void mainCard.offsetWidth;
   mainCard.classList.add('apply-shake');
@@ -196,28 +218,34 @@ function moveNo() {
     noBtn.style.display = 'none';
     imgBox.innerText = "❤️";
     document.getElementById('subText').innerText = "Now you have no choice baby! 🤭💖";
-    yesBtn.style.animationDuration = "1.5s"; 
+    yesBtn.style.animationDuration = "1.5s"; // Returns to normal speed
     return;
   }
 
+  // Increase speed during the game
   currentScale += 0.22;
   yesBtn.style.setProperty('--scale', currentScale);
   const speed = Math.max(0.2, 1.5 - (noClicks * 0.14));
   yesBtn.style.animationDuration = `${speed}s`;
 
   noBtn.style.position = 'fixed';
-  
-  // Logic to prevent the button from going off-screen or hiding behind "Yes"
-  const safePadding = 20;
-  const newX = Math.random() * (window.innerWidth - noBtn.offsetWidth - (safePadding * 2)) + safePadding;
-  const newY = Math.random() * (window.innerHeight - noBtn.offsetHeight - (safePadding * 2)) + safePadding;
-
+  const yesRect = yesBtn.getBoundingClientRect();
+  const pad = 80;
+  let newX, newY;
+  let collision = true;
+  while (collision) {
+    newX = Math.max(10, Math.min(Math.random() * window.innerWidth - noBtn.offsetWidth, window.innerWidth - noBtn.offsetWidth - 10));
+    newY = Math.max(10, Math.min(Math.random() * window.innerHeight - noBtn.offsetHeight, window.innerHeight - noBtn.offsetHeight - 10));
+    collision = (newX < yesRect.right + pad && newX + noBtn.offsetWidth > yesRect.left - pad && newY < yesRect.bottom + pad && newY + noBtn.offsetHeight > yesRect.top - pad);
+  }
   noBtn.style.left = `${newX}px`;
   noBtn.style.top = `${newY}px`;
+
   noBtn.innerText = messages[noClicks - 1] || "No 🙃";
   imgBox.innerText = emojis[noClicks - 1] || "🥺";
 }
 
+// Particle Creators (Now raining from TOP)
 function createHeart() {
   const heart = document.createElement("div");
   heart.classList.add("heart");
@@ -253,6 +281,11 @@ yesBtn.addEventListener('click', () => {
     document.getElementById('noCountDisplay').innerText = noClicks;
   }
 
+  const now = new Date();
+  const anni = Math.ceil((new Date("2026-06-17") - now) / 86400000);
+  document.getElementById('countdowns').innerHTML = `💞 Anniversary in <b>${anni}</b> days`;
+
+  // Massive burst from top
   for(let i=0; i<150; i++) {
     setTimeout(createConfetti, i * 10);
     if(i % 2 === 0) setTimeout(createHeart, i * 20);
@@ -261,6 +294,7 @@ yesBtn.addEventListener('click', () => {
   setInterval(createConfetti, 400);
 });
 
+// Subtle background hearts while waiting
 setInterval(createHeart, 2500);
 </script>
 </body>
